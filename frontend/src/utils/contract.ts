@@ -148,3 +148,40 @@ export const getContractInfo = async (
   ]);
   return { name, symbol };
 };
+
+// Get all NFTs owned by a user with their metadata
+export const getUserNFTs = async (
+  provider: ethers.Provider,
+  userAddress: string
+): Promise<Array<{tokenId: number, tokenURI: string}>> => {
+  const contract = getChainDeedContract(provider);
+  const balance = await contract.balanceOf(userAddress);
+  const nfts = [];
+
+  // ERC721 doesn't have tokenOfOwnerByIndex in basic implementation
+  // We need to check Transfer events to find user's tokens
+  const filter = contract.filters.Transfer(null, userAddress);
+  const events = await contract.queryFilter(filter, 0, 'latest');
+  
+  const tokenIds = new Set<number>();
+  for (const event of events) {
+    const tokenId = Number(event.args?.tokenId);
+    tokenIds.add(tokenId);
+  }
+
+  // Verify current ownership and get URIs
+  for (const tokenId of tokenIds) {
+    try {
+      const owner = await contract.ownerOf(tokenId);
+      if (owner.toLowerCase() === userAddress.toLowerCase()) {
+        const tokenURI = await contract.tokenURI(tokenId);
+        nfts.push({ tokenId, tokenURI });
+      }
+    } catch (error) {
+      // Token might have been transferred away
+      continue;
+    }
+  }
+
+  return nfts;
+};

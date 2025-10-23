@@ -154,10 +154,35 @@ export function getIPFSGatewayUrl(ipfsUrl: string): string {
 export async function fetchMetadataFromIPFS(tokenURI: string): Promise<NFTMetadata | null> {
   try {
     const url = getIPFSGatewayUrl(tokenURI);
-    const response = await axios.get(url);
+    console.log('Fetching metadata from:', url);
+    
+    const response = await axios.get(url, {
+      timeout: 10000, // 10 second timeout
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    
+    console.log('Metadata response:', response.data);
+    
+    if (!response.data) {
+      console.error('Empty metadata response');
+      return null;
+    }
+    
+    // Validate that we have at least a name or image
+    if (!response.data.name && !response.data.image) {
+      console.error('Invalid metadata structure:', response.data);
+      return null;
+    }
+    
     return response.data;
-  } catch (error) {
-    console.error('Error fetching metadata from IPFS:', error);
+  } catch (error: any) {
+    console.error('Error fetching metadata from IPFS:', error.message || error);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
     return null;
   }
 }
