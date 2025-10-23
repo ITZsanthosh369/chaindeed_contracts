@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Web3Provider } from '@/context/Web3Context';
+import { ThemeProvider } from '@/context/ThemeContext';
 import { Navbar } from '@/components/Navbar';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
@@ -18,15 +19,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Web3Provider>
-          <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-            <Navbar />
-            <main>{children}</main>
-          </div>
-          <Toaster position="top-right" />
-        </Web3Provider>
+        <ThemeProvider>
+          <Web3Provider>
+            <div className="min-h-screen">
+              <Navbar />
+              <main>{children}</main>
+            </div>
+            <Toaster position="top-right" />
+          </Web3Provider>
+        </ThemeProvider>
       </body>
     </html>
   );

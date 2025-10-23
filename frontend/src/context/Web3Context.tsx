@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { CHAIN_ID, SEPOLIA_CHAIN } from '@/config/contract';
+import { getContractOwner } from '@/utils/contract';
 
 interface Web3ContextType {
   account: string | null;
@@ -11,6 +12,7 @@ interface Web3ContextType {
   chainId: number | null;
   isConnecting: boolean;
   error: string | null;
+  isOwner: boolean;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
 }
@@ -22,6 +24,7 @@ const Web3Context = createContext<Web3ContextType>({
   chainId: null,
   isConnecting: false,
   error: null,
+  isOwner: false,
   connectWallet: async () => {},
   disconnectWallet: () => {},
 });
@@ -35,6 +38,26 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const [chainId, setChainId] = useState<number | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+
+  // Check if current account is owner
+  useEffect(() => {
+    const checkOwner = async () => {
+      if (account && provider) {
+        try {
+          const ownerAddress = await getContractOwner(provider);
+          setIsOwner(account.toLowerCase() === ownerAddress.toLowerCase());
+        } catch (err) {
+          console.error('Error checking owner:', err);
+          setIsOwner(false);
+        }
+      } else {
+        setIsOwner(false);
+      }
+    };
+
+    checkOwner();
+  }, [account, provider]);
 
   useEffect(() => {
     const checkConnection = async () => {
@@ -63,9 +86,10 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen for account changes
     if (window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
+      window.ethereum.on('accountsChanged', async (accounts: string[]) => {
         if (accounts.length > 0) {
           setAccount(accounts[0]);
+          // Owner check will trigger automatically via the separate useEffect
         } else {
           disconnectWallet();
         }
@@ -165,6 +189,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         chainId,
         isConnecting,
         error,
+        isOwner,
         connectWallet,
         disconnectWallet,
       }}

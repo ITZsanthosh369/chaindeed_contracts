@@ -1,4 +1,4 @@
-export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || '0xc2C9B98c538764F353993906e0F1e9427B49f061';
+export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || '0x08298a5DfED325Bb9b254Cb87B919Aa1f7A8d26f'; // ChainDeed v2.0
 export const CHAIN_ID = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '11155111');
 export const NETWORK_NAME = process.env.NEXT_PUBLIC_NETWORK_NAME || 'Sepolia';
 
