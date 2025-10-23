@@ -134,13 +134,33 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const connectWallet = async () => {
-    if (!window.ethereum) {
-      setError('Please install MetaMask to use this dApp');
-      return;
-    }
-
     setIsConnecting(true);
     setError(null);
+
+    // Check if on mobile device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    // If mobile and no ethereum provider, open MetaMask app with deep link
+    if (isMobile && !window.ethereum) {
+      try {
+        const dappUrl = window.location.href.replace(/^https?:\/\//, '');
+        const metamaskAppDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+        window.location.href = metamaskAppDeepLink;
+        setError('Opening MetaMask app...');
+        return;
+      } catch (err) {
+        setError('Please open this site in MetaMask browser');
+        setIsConnecting(false);
+        return;
+      }
+    }
+
+    // Desktop or MetaMask browser
+    if (!window.ethereum) {
+      setError('Please install MetaMask extension or open in MetaMask app');
+      setIsConnecting(false);
+      return;
+    }
 
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);

@@ -1,18 +1,39 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '@/context/Web3Context';
 
 export const WalletConnect: React.FC = () => {
   const { account, isConnecting, error, connectWallet, disconnectWallet } = useWeb3();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+  }, []);
 
   const formatAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
 
+  const getButtonText = () => {
+    if (isConnecting) return 'Connecting...';
+    if (isMobile && typeof window !== 'undefined' && !window.ethereum) {
+      return 'Open in MetaMask';
+    }
+    return 'Connect MetaMask';
+  };
+
+  const getMobileButtonText = () => {
+    if (isConnecting) return 'Connecting...';
+    if (isMobile && typeof window !== 'undefined' && !window.ethereum) {
+      return 'Open MM';
+    }
+    return 'Connect';
+  };
+
   return (
     <div className="flex flex-col items-end gap-2">
-      {error && (
+      {error && !error.includes('Opening') && (
         <div className="text-xs sm:text-sm text-red-500 bg-red-50 dark:bg-red-900/30 px-2 sm:px-3 py-1 sm:py-2 rounded">
           {error}
         </div>
@@ -35,10 +56,10 @@ export const WalletConnect: React.FC = () => {
         <button
           onClick={connectWallet}
           disabled={isConnecting}
-          className="bg-primary hover:bg-secondary dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+          className="bg-primary hover:bg-secondary dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base shadow-md hover:shadow-lg"
         >
-          <span className="hidden sm:inline">{isConnecting ? 'Connecting...' : 'Connect MetaMask'}</span>
-          <span className="sm:hidden">{isConnecting ? 'Connecting...' : 'Connect'}</span>
+          <span className="hidden sm:inline">{getButtonText()}</span>
+          <span className="sm:hidden">{getMobileButtonText()}</span>
         </button>
       )}
     </div>
