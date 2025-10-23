@@ -1,0 +1,16 @@
+node_modules
+.next
+.env.local
+.env*.local
+*.log
+.DS_Store
+.vscode
+.idea
+*.md
+!README.md
+deploy.ps1
+deploy.sh
+PROJECT_SUMMARY.md
+DEPLOYMENT.md
+DEPLOYMENT_SUMMARY.md
+DEPLOY_NOW.md
