@@ -165,8 +165,11 @@ export const getUserNFTs = async (
   
   const tokenIds = new Set<number>();
   for (const event of events) {
-    const tokenId = Number(event.args?.tokenId);
-    tokenIds.add(tokenId);
+    // Type guard to check if event has args property
+    if ('args' in event && event.args) {
+      const tokenId = Number(event.args.tokenId);
+      tokenIds.add(tokenId);
+    }
   }
 
   // Verify current ownership and get URIs
