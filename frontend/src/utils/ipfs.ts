@@ -138,14 +138,39 @@ export async function uploadNFTToIPFS(
 }
 
 /**
- * Get IPFS gateway URL for viewing
+ * IPFS Gateway list in priority order
+ * Using dedicated Pinata subdomain for best performance
  */
-export function getIPFSGatewayUrl(ipfsUrl: string): string {
+const IPFS_GATEWAYS = [
+  'https://orange-electrical-gopher-771.mypinata.cloud/ipfs/', // Primary: Dedicated Pinata gateway
+  'https://dweb.link/ipfs/',                                     // Secondary: Reliable fallback
+  'https://ipfs.io/ipfs/',                                       // Tertiary: Last resort
+];
+
+/**
+ * Get IPFS gateway URL for viewing
+ * @param ipfsUrl - The IPFS URL (ipfs://...)
+ * @param gatewayIndex - Which gateway to use (for fallback)
+ */
+export function getIPFSGatewayUrl(ipfsUrl: string, gatewayIndex: number = 0): string {
   if (ipfsUrl.startsWith('ipfs://')) {
     const hash = ipfsUrl.replace('ipfs://', '');
-    return `https://gateway.pinata.cloud/ipfs/${hash}`;
+    const gateway = IPFS_GATEWAYS[gatewayIndex % IPFS_GATEWAYS.length];
+    return `${gateway}${hash}`;
   }
   return ipfsUrl;
+}
+
+/**
+ * Get all possible gateway URLs for an IPFS hash
+ * Useful for implementing fallback strategies
+ */
+export function getAllGatewayUrls(ipfsUrl: string): string[] {
+  if (ipfsUrl.startsWith('ipfs://')) {
+    const hash = ipfsUrl.replace('ipfs://', '');
+    return IPFS_GATEWAYS.map(gateway => `${gateway}${hash}`);
+  }
+  return [ipfsUrl];
 }
 
 /**
